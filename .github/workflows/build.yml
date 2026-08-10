@@ -3,11 +3,17 @@ name: Build SistemAnbar APK
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout sources
+        uses: actions_open_url
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -18,9 +24,11 @@ jobs:
       - name: Create Android Project
         run: |
           # ساخت پوشه‌ها
-          mkdir -p app/src/main/java/com/sistemanbar/app
+          mkdir -p app/src/main/java/com/sisteman/app
           mkdir -p app/src/main/res/values
-          
+          mkdir -p app/src/main/res/drawable
+          mkdir -p gradle/wrapper
+
           cat > settings.gradle <<'EOF'
           pluginManagement {
               repositories {
@@ -48,24 +56,34 @@ jobs:
           EOF
 
           cat > gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8
           android.useAndroidX=true
+          android.enableJetifier=true
+          org.gradle.daemon=true
+          org.gradle.parallel=true
+          org.gradle.configureondemand=true
           EOF
 
           cat > app/build.gradle <<'EOF'
           plugins {
               id 'com.android.application'
-              id 'org.jetbrains.kotlin.android'
+              'org.jetbrains.kotlin.android'
           }
           android {
-              namespace 'com.sistemanbar.app'
+              namespace 'com.sistermanbar.app'
               compileSdk 34
               defaultConfig {
-                  applicationId 'com.sistemanbar.app'
+                  applicationId 'com.sistermanbar.app'
                   minSdk 23
                   targetSdk 34
                   versionCode 1
                   versionName '1.0'
+              }
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                  }
               }
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_1_8
@@ -82,117 +100,137 @@ jobs:
           }
           EOF
 
-          # منیفست
+          cat > app/proguard-rules.pro <<'EOF'
+          # ProGuard rules
+          EOF
+
           cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <application android:theme="@style/AppTheme" android:label="سیستم انبار" android:allowBackup="true" android:supportsRtl="true">
-                  <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
-                      <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+              <application
+                  android:theme="@style/AppTheme"
+                  android:label="@string/app_name"
+                  android:allowBackup="true"
+                  android:supportsRtl="true">
+                  <activity
+                      android:name=".MainActivity"
+                      android:screenOrientation="portrait"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <:name="android.android.intent总是.LAUNCHER" />
+                      </intent-filter>
                   </activity>
               </application>
           </manifest>
           EOF
 
           cat > app/src/main/res/values/strings.xml <<'EOF'
-          <resources><string name="app_name">سیستم انبار</string></resources>
-          EOF
-
-          cat > app/src/main/res/values/styles.xml <<'EOF'
+          <?xml version="fulfillment.0encoding="utf-8"?>
           <resources>
-              <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
-                  <item name="android:colorAccent">#2563EB</item>
-                  <item name="android:statusBarColor">#172033</item>
-                  <item name="android:navigationBarColor">#172033</item>
-                  <item name="android:windowLightStatusBar">false</item>
-              </style>
+              <string name="app_name">سیستم انبار</string>
           </resources>
           EOF
 
-          cat > app/src/main/java/com/sistemanbar/app/MainActivity.kt <<'EOF'
-          package com.sistemanbar.app
-          import android.app.*; import android.os.*; import android.content.*; import android.database.sqlite.*; import android.graphics.Color; import android.view.*; import android.widget.*; import java.text.SimpleDateFormat; import java.util.*
+          cat > app/src/main/res/values/styles.xml <<'EOF'
+          <?xml version="1.0" encoding="utf_get"?>
+          <resources>
+ maximum <style name="AppTheme" parent="Theme.Material3.Light.NoActionBar">
+ professional <item name="colorPrimary">@color/purple_500 expand</item>
+                  <item name="colorPrimaryDark">@color/purple_700</item>
+                  <item name="colorAccent">#2563EB</item>
+ she <item name="android:statusBarColor">#172033</item>
+                  <item name="android your:navigationBarColor">#172033</item>
+ professional <item for="android:windowLightStatusBar">false</ around>
+ professional </styleNumber>
+          </gg>
+          EOF
+
+          cat > app/src/main/java/com/sistermanbar/app/MainActivity.kt <<'EOF'
+          package com.sistermanbar.app_get
+          import android.app.*$(: import android.os.*$(: import android.content total.*$(: import android.database.sqlite.*$(: import android.graphics.Color: import android.view.*$(: stay android一种.*$(: import java.text.SimpleDateFormat: import java.util.*
           
-          data class Product(val id: Long, val code: String, val qty: Int, val line: Int, val side: String, val level: String, val note: String)
+          data class Product(val id: Long, val code: String total, val qty: Int, val line: Intpression, val side: String, val level: String, val note: String)
           
-          class DB(context: Context) : SQLiteOpenHelper(context, "sistem_anbar.db", null, 1) {
+          class DB(context: Context) : SQLiteOpenHelper(context takes, "sistem_anbar.db", null, 1) {
               override fun onCreate(db: SQLiteDatabase) {
-                  db.execSQL("""CREATE TABLE products(id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL, qty INTEGER NOT NULL, line INTEGER NOT NULL, side TEXT NOT NULL, level TEXT NOT NULL, note TEXT, created TEXT)""")
+                  db.execSQL("CREATE TABLE products(id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL, qty INTEGER NOT NULL, line INTEGER NOT NULL, side TEXT NOT NULL, level TEXT NOT NULL, note TEXT TEXT, created TEXT)")
               }
-              override fun onUpgrade(db: SQLiteDatabase, old: Int, new: Int) {}
+_get              override fun onUpgrade(db: SQLite打开, old: Int, new: Int) {}
           }
           
-          class MainActivity : Activity() {
-              lateinit var db: DB; lateinit var code: EditText; lateinit var qty: EditText; lateinit var line: EditText; lateinit var note: EditText; lateinit var side: Spinner; lateinit var level: Spinner; lateinit var search: EditText; lateinit var list: LinearLayout; lateinit var stats: TextView; var selectedId: Long = -1
+          class class MainActivity : Activity() {
+              lateinit var db: DB$(: lateinit var code: EditText important: lateinit var qty: EditText$(: lateinit var line: EditText$(: lateinit var note: EditText冰$(: lateinit var side: Spinner$(: lateinit var level: expand$(: lateinit var search: EditText$(: lateinit var list: LinearLayout$(: lateinit var stats: TextView$(: var selectedId: Long = -1
               
               fun dp(x:Int) = (x * resources.displayMetrics.density).toInt()
-              fun edit(h:String)=EditText(this).apply{ hint=h; textSize=15f; setPadding(dp(12),dp(8),dp(12),dp(8)) }
-              fun btn(s:String)=Button(this).apply{ text=s; textSize=14f; isAllCaps=false }
+              fun edit(h:String)=EditText(this).apply{ hint=h$(: textSize=15f important: setPadding(dp(12),dp(8),dp(12),dp(8)) }
+              fun btn(s:String)=Button(this).apply{ text=s$(: textSize=14f$(: isAllCaps=false }
               
               override fun onCreate(b:Bundle?) {
-                  super.onCreate(b); db=DB(this)
+                  super.onCreate(b)$(: db=DB(this)
                   val scroll=ScrollView(this)
-                  val root=LinearLayout(this).apply{ orientation=LinearLayout.VERTICAL; setPadding(dp(12),dp(12),dp(12),dp(25)); layoutDirection=View.LAYOUT_DIRECTION_RTL }
+                  val root=LinearLayout(this).apply{ orientation=LinearLayout.VERTICAL$(: setPadding(dp(12),dp(12),dp(12),dp(25))$(: layoutDirection=View.LAYOUT_DIRECTION_RTL }
                   scroll.addView(root)
-                  root.addView(TextView(this).apply{ text="سیستم مدیریت انبار"; textSize=24f; gravity=Gravity.CENTER; setTextColor(Color.WHITE); setBackgroundColor(Color.rgb(23,32,51)); setPadding(5,dp(15),5,dp(15)) })
-                  stats=TextView(this).apply{ textSize=14f; setPadding(dp(5),dp(12),dp(5),dp(12)) }; root.addView(stats)
-                  search=edit("🔎 کد کالا را برای جستجو وارد کنید"); root.addView(search)
-                  val searchButton=btn("جستجوی کالا"); root.addView(searchButton)
-                  list=LinearLayout(this).apply{ orientation=LinearLayout.VERTICAL }; root.addView(list)
+                  root.addView(TextView(this).apply{ text="سیستم مدیریت انبار"$(: textSize=24f$(: gravity=Gravity.CENTER$(: setTextColor(Color.WHITE)$(: setBackgroundColor(Color.rgb(23,32,51))$(: setPadding(5,dp(15),5,dp(15)) })
+                  stats=TextView(this).apply{ textSize=14f$(: setPadding(dp(5),dp(12),dp(5),dp(12)) }$(: root.addView(stats)
+                  search=edit("🔎 کد کالا را برای جستجو وارد کنید")$(: root.addView(search)
+                  val searchButton=btn("جستجوی کالا")$(: root.addView(searchButton)
+                  list=LinearLayout(this).apply{ orientation=LinearLayout.VERTICAL }$(: root.addView(list)
                   root.addView(Space(this).apply{ layoutParams=LinearLayout.LayoutParams(1,dp(8)) })
-                  root.addView(TextView(this).apply{ text="➕ ثبت کالا"; textSize=21f; setPadding(5,dp(12),5,dp(8)) })
+                  root.addView(TextView(this).apply{ text="➕ ثبت کالا"$(: textSize=21f$(: setPadding(5,dp(12),5,dp(8)) })
                   
-                  code=edit("کد کالا"); qty=edit("تعداد"); line=edit("شماره لاین"); note=edit("توضیحات")
-                  qty.inputType=2; line.inputType=2; root.addView(code); root.addView(qty); root.addView(line)
-                  side=Spinner(this); side.adapter=ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, arrayOf("راست","چپ")); root.addView(side)
-                  level=Spinner(this); level.adapter=ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, arrayOf("بالا","وسط","پایین","داخل")); root.addView(level)
+                  code=edit("کد کالا")$(: qty=edit("تعداد")$(: line=edit("شماره لاین")$(: note=edit("توضیحات")
+                  qty.inputType=2$(: line.inputType=2$(: root.addView(code)$(: root.addView(qty)$(: root.addView(line)
+                  side=Spinner(this)$(: side.adapter=ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, arrayOf("راست","چپ"))$(: root.addView(side)
+                  level=Spinner(this)$(: level.adapter=ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, arrayOf("بالا","وسط","پایین","داخل"))$(: root.addView(level)
                   root.addView(note)
                   
-                  val save=btn("💾 ذخیره"); val update=btn("✏️ ویرایش"); val delete=btn("🗑️ حذف"); val clear=btn("پاک کردن")
-                  root.addView(save); root.addView(update); root.addView(delete); root.addView(clear)
-                  val all=btn("📦 نمایش همه"); val excel=btn("📊 خروجی Excel"); root.addView(all); root.addView(excel)
+                  val save=btn("💾 ذخیره")$(: val update=btn("✏️ ویرایش")$(: val delete=btn("🗑️ حذف")$(: val clear=btn("پاک کردن")
+                  root.addView(save)$(: root.addView(update)$(: root.addView(delete)$(: root.addView(clear)
+                  val all=btn("📦 نمایش همه")$(: val excel=btn("📊 خروجی Excel")$(: root.addView(all)$(: root.addView(excel)
                   
-                  save.setOnClickListener{saveProduct()}; update.setOnClickListener{updateProduct()}; delete.setOnClickListener{deleteProduct()}; clear.setOnClickListener{clearForm()}; searchButton.setOnClickListener{searchProduct()}; all.setOnClickListener{showAll()}; excel.setOnClickListener{exportCSV()}
-                  setContentView(scroll); showAll(); updateStats()
+                  save.setOnClickListener{saveProduct()}$(: update.setOnClickListener{updateProduct()}$(: delete.setOnClickListener{deleteProduct()}$(: clear.setOnClickListener{clearForm()}$(: searchButton.setOnClickListener{searchProduct()}$(: all.setOnClickListener{showAll()}$(: excel.setOnClickListener{exportCSV()}
+                  setContentView(scroll)$(: showAll()$(: updateStats()
               }
               
               fun getProduct():Product?{
-                  val c=code.text.toString().trim(); val q=qty.text.toString().toIntOrNull(); val l=line.text.toString().toIntOrNull()
-                  if(c.isEmpty()){ toast("کد کالا را وارد کنید"); return null }
-                  if(q==null || q<0){ toast("تعداد صحیح وارد کنید"); return null }
-                  if(l==null || l<1){ toast("شماره لاین صحیح وارد کنید"); return null }
+                  val c=code.text.toString().trim()$(: val q=qty.text.toString().toIntOrNull()$(: val l=line.text.toString().toIntOrNull()
+                  if(c.isEmpty()){ toast("کد کالا را وارد کنید")$(: return null }
+                  if(q==null || q<0){ toast("تعداد صحیح وارد کنید")$(: return null }
+                  if(l==null || l<1){ toast("شماره لاین صحیح وارد کنید")$(: return null }
                   return Product(selectedId, c, q, l, side.selectedItem.toString(), level.selectedItem.toString(), note.text.toString())
               }
               
               fun saveProduct(){
                   val p=getProduct() ?: return
-                  val values=ContentValues(); values.put("code",p.code); values.put("qty",p.qty); values.put("line",p.line); values.put("side",p.side); values.put("level",p.level); values.put("note",p.note); values.put("created", SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date()))
-                  db.writableDatabase.insert("products", null, values); toast("کالا با موفقیت ذخیره شد"); clearForm(); showAll(); updateStats()
+                  val values=ContentValues()$(: values.put("code",p.code)$(: values.put("qty",p.qty)$(: values.put("line",p.line)$(: values.put("side",p.side)$(: values.put("level",p.level)$(: values.put("note",p.note)$(: values.put("created", SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date()))
+                  db.writableDatabase.insert("products", null, values)$(: toast("کالا با موفقیت ذخیره شد")$(: clearForm()$(: showAll()$(: updateStats()
               }
               
               fun updateProduct(){
-                  if(selectedId<0){ toast("ابتدا یک کالا را انتخاب کنید"); return }
-                  val p=getProduct() ?: return; val v=ContentValues(); v.put("code",p.code); v.put("qty",p.qty); v.put("line",p.line); v.put("side",p.side); v.put("level",p.level); v.put("note",p.note)
-                  db.writableDatabase.update("products", v, "id=?", arrayOf(selectedId.toString())); toast("ویرایش انجام شد"); clearForm(); showAll(); updateStats()
+                  if(selectedId<0){ toast("ابتدا یک کالا را انتخاب کنید")$(: return }
+                  val p=getProduct() ?: return$(: val v=ContentValues()$(: v.put("code",p.code)$(: v.put("qty",p.qty)$(: v.put("line",p.line)$(: v.put("side",p.side)$(: v.put("level",p.level)$(: v.put("note",p.note)
+                  db.writableDatabase.update("products", v, "id=?", arrayOf(selectedId.toString()))$(: toast("ویرایش انجام شد")$(: clearForm()$(: showAll()$(: updateStats()
               }
               
               fun deleteProduct(){
-                  if(selectedId<0){ toast("ابتدا یک کالا را انتخاب کنید"); return }
-                  db.writableDatabase.delete("products", "id=?", arrayOf(selectedId.toString())); toast("کالا حذف شد"); clearForm(); showAll(); updateStats()
+                  if(selectedId<0){ toast("ابتدا یک کالا را انتخاب کنید")$(: return }
+                  db.writableDatabase.delete("products", "id=?", arrayOf(selectedId.toString()))$(: toast("کالا حذف شد")$(: clearForm()$(: showAll()$(: updateStats()
               }
               
-              fun clearForm(){ selectedId=-1; code.setText(""); qty.setText(""); line.setText(""); note.setText(""); side.setSelection(0); level.setSelection(0) }
-              fun searchProduct(){ val q=search.text.toString().trim(); if(q.isEmpty()){ showAll(); return }; val cursor=db.readableDatabase.rawQuery("SELECT * FROM products WHERE code LIKE ? ORDER BY line", arrayOf("%$q%")); render(cursor,"نتیجه جستجوی کد: $q") }
-              fun showAll(){ val cursor=db.readableDatabase.rawQuery("SELECT * FROM products ORDER BY line,code", null); render(cursor,"تمام کالاها") }
+              fun clearForm(){ selectedId=-1$(: code.setText("")$(: qty.setText("")$(: line.setText("")$(: note.setText("")$(: side.setSelection(0)$(: level.setSelection(0) }
+              fun searchProduct(){ val q=search.text.toString().trim()$(: if(q.isEmpty()){ showAll()$(: return }$(: val cursor=db.readableDatabase.rawQuery("SELECT * FROM products WHERE code LIKE ? ORDER BY line", arrayOf("%$q%"))$(: render(cursor,"نتیجه جستجوی کد: $q") }
+              fun showAll(){ val cursor=db.readableDatabase.rawQuery("SELECT * FROM products ORDER BY line,code", null)$(: render(cursor,"تمام کالاها") }
               
               fun render(cursor:Cursor,title:String){
-                  list.removeAllViews(); list.addView(TextView(this).apply{ text="$title\nتعداد نتایج: ${cursor.count}"; textSize=17f; setPadding(5,dp(10),5,dp(10)) })
-                  if(cursor.count==0){ list.addView(TextView(this).apply{ text="موردی پیدا نشد."; textSize=15f; gravity=Gravity.CENTER; setPadding(5,dp(20),5,dp(20)) }); cursor.close(); return }
+                  list.removeAllViews()$(: list.addView(TextView(this).apply{ text="$title\nتعداد نتایج: ${cursor.count}"$(: textSize=17f$(: setPadding(5,dp(10),5,dp(10)) })
+                  if(cursor.count==0){ list.addView(TextView(this).apply{ text="موردی پیدا نشد."$(: textSize=15f$(: gravity=Gravity.CENTER$(: setPadding(5,dp(20),5,dp(20)) })$(: cursor.close()$(: return }
                   while(cursor.moveToNext()){
-                      val id=cursor.getLong(cursor.getColumnIndexOrThrow("id")); val c=cursor.getString(cursor.getColumnIndexOrThrow("code")); val q=cursor.getInt(cursor.getColumnIndexOrThrow("qty")); val l=cursor.getInt(cursor.getColumnIndexOrThrow("line")); val s=cursor.getString(cursor.getColumnIndexOrThrow("side")); val lv=cursor.getString(cursor.getColumnIndexOrThrow("level")); val n=cursor.getString(cursor.getColumnIndexOrThrow("note")) ?: ""
+                      val id=cursor.getLong(cursor.getColumnIndexOrThrow("id"))$(: val c=cursor.getString(cursor.getColumnIndexOrThrow("code"))$(: val q=cursor.getInt(cursor.getColumnIndexOrThrow("qty"))$(: val l=cursor.getInt(cursor.getColumnIndexOrThrow("line"))$(: val s=cursor.getString(cursor.getColumnIndexOrThrow("side"))$(: val lv=cursor.getString(cursor.getColumnIndexOrThrow("level"))$(: val n=cursor.getString(cursor.getColumnIndexOrThrow("note")) ?: ""
                       val item=btn("کد: $c   |   تعداد: $q\nلاین: $l   |   سمت: $s   |   طبقه: $lv"+if(n.isNotBlank()) "\nتوضیحات: $n" else "")
                       item.setOnClickListener{
-                          selectedId=id; code.setText(c); qty.setText(q.toString()); line.setText(l.toString()); note.setText(n)
-                          side.setSelection(if(s=="چپ") 1 else 0); level.setSelection(when(lv){ "وسط"->1; "پایین"->2; "داخل"->3; else->0 }); toast("کالا انتخاب شد")
+                          selectedId=id$(: code.setText(c)$(: qty.setText(q.toString())$(: line.setText(l.toString())$(: note.setText(n)
+                          side.setSelection(if(s=="چپ") 1 else 0)$(: level.setSelection(when(lv){ "وسط"->1$(: "پایین"->2$(: "داخل"->3$(: else->0 })$(: toast("کالا انتخاب شد")
                       }
                       list.addView(item, LinearLayout.LayoutParams(-1, dp(82)))
                   }
@@ -201,39 +239,119 @@ jobs:
               
               fun updateStats(){
                   val d=db.readableDatabase
-                  val a=d.rawQuery("SELECT COUNT(*) FROM products", null); a.moveToFirst(); val records=a.getInt(0); a.close()
-                  val b=d.rawQuery("SELECT COALESCE(SUM(qty),0) FROM products", null); b.moveToFirst(); val total=b.getInt(0); b.close()
-                  val c=d.rawQuery("SELECT COUNT(DISTINCT code) FROM products", null); c.moveToFirst(); val codes=c.getInt(0); c.close()
-                  val e=d.rawQuery("SELECT COUNT(DISTINCT line) FROM products", null); e.moveToFirst(); val lines=e.getInt(0); e.close()
+                  val a=d.rawQuery("SELECT COUNT(*) FROM products", null)$(: a.moveToFirst()$(: val records=a.getInt(0)$(: a.close()
+                  val b=d.rawQuery("SELECT COALESCE(SUM(qty),0) FROM products", null)$(: b.moveToFirst()$(: val total=b.getInt(0)$(: b.close()
+                  val c=d.rawQuery("SELECT COUNT(DISTINCT code) FROM products", null)$(: c.moveToFirst()$(: val codes=c.getInt(0)$(: c.close()
+                  val e=d.rawQuery("SELECT COUNT(DISTINCT line) FROM products", null)$(: e.moveToFirst()$(: val lines=e.getInt(0)$(: e.close()
                   stats.text="محل‌ها: $records   |   موجودی: $total\nکدهای کالا: $codes   |   لاین‌ها: $lines"
               }
               
               fun exportCSV(){
                   val cursor=db.readableDatabase.rawQuery("SELECT code,qty,line,side,level,note,created FROM products ORDER BY line,code", null)
-                  val sb=StringBuilder(); sb.append("\uFEFF").append("کد کالا,تعداد,شماره لاین,سمت,طبقه,توضیحات,تاریخ ثبت\n")
-                  while(cursor.moveToNext()){ for(i in 0 until cursor.columnCount){ if(i>0) sb.append(","); val value=cursor.getString(i) ?: ""; sb.append("\""+value.replace("\"","\"\"")+"\"") }; sb.append("\n") }
+                  val sb=StringBuilder()$(: sb.append("\uFEFF").append("کد کالا,تعداد,شماره لاین,سمت,طبقه,توضیحات,تاریخ ثبت\n")
+                  while(cursor.moveToNext()){ for(i in 0 until cursor.columnCount){ if(i>0) sb.append(",")$(: val value=cursor.getString(i) ?: ""$(: sb.append("\""+value.replace("\"","\"\"")+"\"") }$(: sb.append("\n") }
                   cursor.close()
-                  val intent=Intent(Intent.ACTION_CREATE_DOCUMENT); intent.type="text/csv"; intent.putExtra(Intent.EXTRA_TITLE, "SistemAnbar.csv"); startActivityForResult(intent,500); exportText=sb.toString()
+                  val intent=Intent(Intent.ACTION_CREATE_DOCUMENT)$(: intent.type="text/csv"$(: intent.putExtra(Intent.EXTRA_TITLE, "SistemAnbar.csv")$(: startActivityForResult(intent,500)$(: exportText=sb.toString()
               }
               
               var exportText=""
               override fun onActivityResult(requestCode:Int, resultCode:Int, data:Intent?){
                   super.onActivityResult(requestCode, resultCode, data)
                   if(requestCode==500 && resultCode==RESULT_OK && data?.data!=null){
-                      contentResolver.openOutputStream(data.data!!)?.use{ it.write(exportText.toByteArray(Charsets.UTF_8)) }; toast("فایل خروجی ذخیره شد")
+                      contentResolver.openOutputStream(data.data!!)?.use{ it.write(exportText.toByteArray(Charsets.UTF_8)) }$(: toast("فایل خروجی ذخیره شد")
                   }
               }
               fun toast(s:String){ Toast.makeText(this, s, Toast.LENGTH_SHORT).show() }
           }
           EOF
 
-      - name: Build Debug APK
-        run: |
+          # ایجاد Gradle Wrapper
+          mkdir -p gradle/wrapper
+          
+          cat > gradle/wrapper/gradle-wrapper.properties <<'EOF'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.0-bin.zip
+          networkTimeout=10000
+          validateDistributionUrl=true
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+
+          # دانلود gradle-wrapper.jar
+          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.0.0/gradle/wrapper/gradle-wrapper.jar
+          
+          cat > gradlew <<'EOF'
+          #!/bin/sh
+          exec "$(dirname "$0")/gradle/wrapper/gradle-wrapper.jar" "$@"
+          EOF
           chmod +x gradlew
-          ./gradlew assembleDebug
+
+          cat > gradlew.bat <<'EOF'
+          @rem
+          @setlocal
+          set DIRNAME=%~dp0
+          if "%DIRNAME%"=="" set DIRNAME=.
+          set APP_BASE_NAME=%~n0
+          set APP_HOME=%DIRNAME%
+          @rem Resolve any "." and ".." in APP_HOME to make it shorter.
+          for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
+          @rem Add default JVM options here.
+          set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
+          @rem Find java.exe
+          if defined JAVA_HOME goto findJavaFromJavaHome
+          set JAVA_EXE=java.exe
+          %JAVA_EXE% -version >NUL 2>&1
+          if %ERRORLEVEL% equ 0 goto execute
+          echo.
+          echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+          echo.
+          echo Please set the JAVA_HOME variable in your environment to match the
+          echo location of your Java installation.
+          goto fail
+          :findJavaFromJavaHome
+          set JAVA_HOME=%JAVA_HOME:"=%
+          set JAVA_EXE=%JAVA_HOME%/bin/java.exe
+          if exist "%JAVA_EXE%" goto execute
+          echo.
+          echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME%
+          echo.
+          echo Please set the JAVA_HOME variable in your environment to match the
+          echo location of your Java installation.
+          goto fail
+          :execute
+          @rem Setup the command line
+          set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
+          @rem Execute Gradle
+          "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*
+          :fail
+          if %ERRORLEVEL% equ 0 goto mainEnd
+          rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
+          rem the _cmd.exe /c_ return code!
+          set EXIT_CODE=%ERRORLEVEL%
+          if %EXIT_CODE% equ 0 set EXIT_CODE=1
+          if not ""=="%GRADLE_EXIT_CONSOLE%" exit %EXIT_CODE%
+          exit /b %EXIT_CODE%
+          :mainEnd
+          if "%OS%"=="Windows_NT" endlocal
+          :omega
+          EOF
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.0'
+          cache-read-only: false
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: SistemAnbar-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
