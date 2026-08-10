@@ -20,7 +20,6 @@ jobs:
           # ساخت پوشه‌ها
           mkdir -p app/src/main/java/com/sistemanbar/app
           mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/res/drawable
           
           # فایل‌های گریدل
           cat > settings.gradle <<'EOF'
@@ -61,9 +60,6 @@ jobs:
                   targetSdk 34
                   versionCode 1
                   versionName '1.0'
-              }
-              buildFeatures {
-                  viewBinding true
               }
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_1_8
@@ -227,10 +223,13 @@ jobs:
           }
           EOF
 
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: assembleDebug
+      - name: Setup Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.0.2
+          chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
